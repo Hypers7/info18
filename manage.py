@@ -1,21 +1,13 @@
-from flask import Flask, session
+from flask import session
 # 集成管理器脚本
 from flask_script import Manager
-# 集成sqlalchemy扩展
-from flask_sqlalchemy import SQLAlchemy
 # 数据迁移的扩展
 from flask_migrate import Migrate, MigrateCommand
-# 集成状态保持的扩展
-from flask_session import Session
-# 导入配置文件
-from config import config_dict
-app = Flask(__name__)
+# 导入info目录下的app和db
+from info import create_app  # , db
 
-# 使用配置信息
-app.config.from_object(config_dict['dev'])
-
-# 创建sqlalchemy实例对象
-db = SQLAlchemy(app)
+# 调用函数 获取app 传入参数 通过参数的不同可以获取不同环境下的app, db
+app, db = create_app('dev')
 
 
 # 使用管理器对象
@@ -24,8 +16,6 @@ manage = Manager(app)
 Migrate(app, db)
 # 添加迁移命令
 manage.add_command('db', MigrateCommand)
-# 实例化session
-Session(app)
 
 
 @app.route('/')
