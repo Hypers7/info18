@@ -6,8 +6,8 @@ from flask_session import Session
 # 导入配置文件
 from config import config_dict
 
-    # 创建sqlalchemy实例对象
-    # db = SQLAlchemy()
+# 创建sqlalchemy实例对象
+# db = SQLAlchemy()
 
 
 # 定义函数 封装程序初始化的操作
@@ -26,6 +26,10 @@ def create_app(config):
 
     # 实例化session
     Session(app)
+
+    # 导入蓝图,注册蓝图
+    from info.modules.news import news_blue
+    app.register_blueprint(news_blue)
 
     return app, db
 
