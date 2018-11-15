@@ -3,10 +3,10 @@ from flask_script import Manager
 # 数据迁移的扩展
 from flask_migrate import Migrate, MigrateCommand
 # 导入info目录下的app和db
-from info import create_app  # , db
+from info import create_app, db, models
 
 # 调用函数 获取app 传入参数 通过参数的不同可以获取不同环境下的app, db
-app, db = create_app('dev')
+app = create_app('dev')
 
 
 # 使用管理器对象
