@@ -15,8 +15,9 @@ class Config():
 
     # 实现状态保持, 配置session信息存储在redis中
     SESSION_TYPE = 'redis'
-    # 指定redis的主机地址与端口号
+    # 指定redis的主机地址
     host = '127.0.0.1'
+    # 指定redis端口号
     port = 6379
     SESSION_REDIS = StrictRedis(host, port)
     SESSION_USE_SIGNER = True

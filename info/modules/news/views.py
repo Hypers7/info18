@@ -1,4 +1,4 @@
-# 导入模板对象
+# 导入模板对象, 导入上下文对象current_app
 from flask import render_template, current_app
 # 导入蓝图对象 使用蓝图创建路由映射
 from . import news_blue
