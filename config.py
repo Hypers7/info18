@@ -15,11 +15,13 @@ class Config():
 
     # 实现状态保持, 配置session信息存储在redis中
     SESSION_TYPE = 'redis'
+
     # 指定redis的主机地址
-    host = '127.0.0.1'
+    HOST = '127.0.0.1'
     # 指定redis端口号
-    port = 6379
-    SESSION_REDIS = StrictRedis(host, port)
+    PORT = 6379
+
+    SESSION_REDIS = StrictRedis(HOST, PORT)
     SESSION_USE_SIGNER = True
     # 设置session有效期,flask内置的session有效期配置
     PERMANENT_SESSION_LIFETIME = 3600

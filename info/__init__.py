@@ -1,13 +1,22 @@
 from flask import Flask
+
 # 集成sqlalchemy扩展
 from flask_sqlalchemy import SQLAlchemy
 # 集成状态保持的扩展
 from flask_session import Session
 # 导入配置文件
-from config import config_dict
+#  导入配置信息
+from config import config_dict, Config
 # 集成Python中的标准日志模块
 import logging
 from logging.handlers import RotatingFileHandler
+# 导入redis
+from redis import StrictRedis
+
+
+# 实例化redis对象
+redis_store = StrictRedis(Config.HOST, Config.PORT)
+
 
 # 创建sqlalchemy实例对象
 db = SQLAlchemy()
@@ -46,6 +55,9 @@ def create_app(config):
     # 导入蓝图,注册蓝图
     from info.modules.news import news_blue
     app.register_blueprint(news_blue)
+    # 注册蓝图 表单
+    from info.modules.passport import passport_blue
+    app.register_blueprint(passport_blue)
 
     return app
 
