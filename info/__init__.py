@@ -15,7 +15,7 @@ from redis import StrictRedis
 
 
 # 实例化redis对象
-redis_store = StrictRedis(Config.HOST, Config.PORT)
+redis_store = StrictRedis(Config.HOST, Config.PORT, decode_responses=True)
 
 
 # 创建sqlalchemy实例对象
