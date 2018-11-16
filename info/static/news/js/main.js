@@ -180,7 +180,42 @@ function sendSMSCode() {
         return;
     }
 
-    // TODO 发送短信验证码
+    // 发送短信验证码
+    // 定义参数对象
+    var params = {
+        'mobile': mobile,
+        'image_code':imageCode,
+        'image_code_id':imageCodeId
+    }
+    $.ajax({
+        url:'/sms_code',
+        type:'post',
+        data:JSON.stringify(params),
+        contentType:'application/json',  // 发送给后端的数据类型
+        success:function (resp) {
+            // 如果发送成功
+            if (resp.errno == '0') {
+                // 使用定时器 控制发送
+                var num = 60;
+                var t = setInterval(function () {
+                    if (num == 0) {
+                        clearInterval(t)
+                        $('.get_code').attr('onclick', 'sendSMSCode();')
+                        $('.get_code').html('点击获取验证码')
+
+                    }else{
+                        num-=1;
+                        $('.get_code').html(num + '秒')
+
+                    }
+
+                },1000)
+            }else{
+                alert(resp.errmsg);
+            }
+        }
+
+    })
 }
 
 // 调用该函数模拟点击左侧按钮
