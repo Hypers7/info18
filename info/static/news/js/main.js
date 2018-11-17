@@ -144,6 +144,27 @@ $(function(){
         }
 
         // 发起注册请求
+        var params = {
+		    'mobile':mobile,
+            'sms_code':smscode,
+            'password':password
+
+        }
+        $.ajax({
+            url:'/register',
+            type: 'post',
+            data:JSON.stringify(params),
+            contentType: 'application/json',
+            success:function (resp) {
+                if (resp.errno == '0'){
+                    location.reload()
+                }else{
+                    alert(resp.errmsg)
+                }
+
+            }
+
+        })
 
     })
 })
@@ -192,7 +213,7 @@ function sendSMSCode() {
         type:'post',
         data:JSON.stringify(params),
         contentType:'application/json',  // 发送给后端的数据类型
-        success:function (resp) {
+        success:function(resp){
             // 如果发送成功
             if (resp.errno == '0') {
                 // 使用定时器 控制发送

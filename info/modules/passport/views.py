@@ -3,13 +3,19 @@ from . import passport_blue
 # 导入captcha工具 生成图片验证码
 from info.utils.captcha.captcha import captcha
 # 导入flask内置的请求上下文对象
-from flask import request, jsonify, current_app, make_response
+from flask import request, jsonify, current_app, make_response, session
+
 from info.utils.response_code import RET
 # 导入redis实例
-from info import redis_store, constants
+from info import redis_store, constants, db
+
 import re, random
 # 导入云通讯
 from info.libs.yuntongxun.sms import CCP
+# 导入模型类
+from info.models import User
+
+from datetime import datetime
 
 
 # 生成图片验证码
@@ -91,10 +97,20 @@ def send_sms_code():
     # 比较图片验证码是否正确 ,忽略大小写
     if real_image_code.lower() != image_code.lower():
         return jsonify(errno=RET.DATAERR, errmsg='图片验证码错误')
+
+    # 根据手机号来查询用户未注册
+    try:
+        user = User.query.filter(User.mobile==mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询数据库失败')
+    else:
+        if user is not None:
+            return jsonify(errno=RET.DATAEXIST, errmsg='手机号已注册')
     # 生成短信随机码
     sms_code = '%06d' % random.randint(0, 9999999)
     try:
-        redis_store.setex('SMSCode' + mobile,constants.SMS_CODE_REDIS_EXPIRES,sms_code)
+        redis_store.setex('SMSCode_' + mobile,constants.SMS_CODE_REDIS_EXPIRES,sms_code)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg='保存数据失败')
@@ -114,7 +130,97 @@ def send_sms_code():
         return jsonify(errno=RET.OK, errmsg='发送成功')
 
 
+# 注册
+@passport_blue.route('/register', methods=['POST'])
+def register():
 
+    mobile = request.json.get('mobile')
+    sms_code = request.json.get('sms_code')
+    password = request.json.get('password')
+    if not all([mobile, sms_code, password]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数缺失')
+    if not re.match(r'1[3456789]\d{9}$', mobile):
+        return jsonify(errno=RET.PARAMERR, errmsg='手机号格式错误')
+    try:
+        real_sms_code = redis_store.get('SMSCode_' + mobile)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询数据库失败')
+    if not real_sms_code:
+        return jsonify(errno=RET.NODATA, errmsg='短信验证码已过期')
+    if real_sms_code != str(sms_code):
+        return jsonify(errno=RET.DATAERR, errmsg='短信验证码错误')
+    try:
+        redis_store.delete('SMSCode_' + mobile)
+    except Exception as e:
+        current_app.logger.error(e)
+
+    try:
+        user = User.query.filter_by(mobile=mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询用户信息失败')
+    else:
+        if user:
+            return jsonify(errno=RET.DATAERR, errmsg='手机号以注册')
+
+    user = User()
+    user.mobile = mobile
+    user.nick_name = mobile
+    # 调用了模型类中的密码加密方法,generate_password_hash方法,werkzeug提供的
+    user.password = password
+    # 提交用户数据到mysql 数据库
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DATAERR, errmsg='保存用户信息失败')
+    session['user_id'] = user.id
+    session['mobile'] = mobile
+    session['nick_name'] = mobile
+
+    return jsonify(errno=RET.OK, errmsg='注册成功')
+
+
+@passport_blue.route('/login', methods=['post'])
+def login():
+    mobile = request.json.get('mobile')
+    password = request.json.get('password')
+
+    if not all([mobile, password]):
+        return jsonify(errno=RET.PARAMERR, errmsg='参数缺失')
+    if not re.match(r'1[3456789]\d{9}$', mobile):
+        return jsonify(errno=RET.PARAMERR, errmsg='手机号格式错误')
+
+
+    try:
+        user = User.query.filter_by(mobile=mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询用户信息失败')
+    # 防止反推断
+    if user is None and not user.check_password(password):
+        return jsonify(errno=RET.DATAERR, errmsg='用户名或密码错误')
+    #
+    user.last_login = datetime.now()
+    #
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg='保存用户信息出错')
+
+    session['user_id'] = user.id
+    session['mobile'] = mobile
+    # 拿到mysql中的nick_mane
+    # 确保redis中缓存数据 和mysql数据库中的真实数据保持一致
+    session['nike_name'] = user.nick_name
+
+    return jsonify(errno=RET.OK, errmsg='登录成功')
 
 
 
