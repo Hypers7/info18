@@ -119,6 +119,9 @@ $(function(){
             type:'post',
             data:JSON.stringify(params),
             contentType:'application/json',
+            headers:{
+                'X-CSRFToken':getCookie('csrf_token')
+            },
             success:function(resp){
                 if(resp.errno == '0'){
                     location.reload();
@@ -172,6 +175,9 @@ $(function(){
             type: 'post',
             data:JSON.stringify(params),
             contentType: 'application/json',
+            headers:{
+                'X-CSRFToken':getCookie('csrf_token')
+            },
             success:function (resp) {
                 if (resp.errno == '0'){
                     location.reload()
@@ -230,6 +236,9 @@ function sendSMSCode() {
         type:'post',
         data:JSON.stringify(params),
         contentType:'application/json',  // 发送给后端的数据类型
+        headers:{
+                'X-CSRFToken':getCookie('csrf_token')
+        },
         success:function(resp){
             // 如果发送成功
             if (resp.errno == '0') {
@@ -290,3 +299,43 @@ function generateUUID() {
     });
     return uuid;
 }
+
+
+//用户退出
+function logout() {
+    $.get('/logout', function(resp){
+        location.reload()
+    })
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

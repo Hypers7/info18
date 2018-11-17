@@ -2,12 +2,35 @@
 from flask import render_template, current_app
 # 导入蓝图对象 使用蓝图创建路由映射
 from . import news_blue
+from flask import session
+from info.models import User
 
 
 @news_blue.route('/')
 def index():
     # 加载模板文件
-    return render_template('news/index.html')
+    """
+    首页
+    实现页面右上角 检查用户登录状态 如果用户登录 显示用户信息 如果未登录提供登录注册入口
+    1 从redis中获取用户id
+    2 根据user id查询mysql获取用户信息
+    3 把用户信息 传给模板
+
+    :return:
+    """
+    user_id = session.get('user_id')
+    user = None
+    try:
+        user = User.query.get(user_id)
+    except Exception as e:
+        current_app.logger.error(e)
+    #     return 后不登录无法访问首页
+
+    # 定义字典 用来返回数据
+    data = {
+        'user_info': user.to_dict() if user else None
+    }
+    return render_template('news/index.html', data=data)
 
 
 # 加载logo图标:浏览器会默认请求 url地址:http://127.0.0.1:5000/favicon.ico

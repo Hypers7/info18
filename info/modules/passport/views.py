@@ -221,6 +221,20 @@ def login():
     return jsonify(errno=RET.OK, errmsg='登录成功')
 
 
+# 实现用户退出
+@passport_blue.route('/logout')
+def logout():
+    """
+    用户退出的本质是清除redis中缓存的用户信息
+
+    :return:
+    """
+
+    session.pop('user_id', None)
+    session.pop('nick_name', None)
+    session.pop('mobile', None)
+
+    return jsonify(errno=RET.OK, errmsg='OK')
 
 
 
