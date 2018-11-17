@@ -30,7 +30,10 @@ def index():
     data = {
         'user_info': user.to_dict() if user else None
     }
-    return render_template('news/index.html', data=data)
+    style = {
+        'style': "display: block"
+    }
+    return render_template('news/index.html', data=data, style=style)
 
 
 # 加载logo图标:浏览器会默认请求 url地址:http://127.0.0.1:5000/favicon.ico

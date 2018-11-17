@@ -23,13 +23,13 @@
             </ul>
             {# 如果用户登录,显示用户信息,否则,提供登录注册入口 #}
             {% if data.user_info %}
-                <div class="user_login fr" style="display: block">
+                <div class="user_login fr" style="{{ style['style'] }}">
                     <img src="{% if data.user_info.avatar_url %}{{ data.user_info.avatar_url }}{% else %}../../static/news/images/person01.png{% endif %}" class="lgin_pic">
                     <a href="#">{{ data.user_info.nick_name }}</a>
                     <a href="javascript:;" onclick="logout()">退出</a>
                 </div>
             {% else %}
-                <div class="user_btns fr" style="display: block">
+                <div class="user_btns fr" style="{{ style['style'] }}">
                     <a href="javascript:;" class="login_btn">登录</a> / <a href="javascript:;" class="register_btn">注册</a>
                 </div>
             {% endif %}
