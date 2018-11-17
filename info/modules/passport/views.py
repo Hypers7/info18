@@ -184,17 +184,15 @@ def register():
     return jsonify(errno=RET.OK, errmsg='注册成功')
 
 
-@passport_blue.route('/login', methods=['post'])
+# 登录
+@passport_blue.route('/login', methods=['POST'])
 def login():
     mobile = request.json.get('mobile')
     password = request.json.get('password')
-
     if not all([mobile, password]):
         return jsonify(errno=RET.PARAMERR, errmsg='参数缺失')
     if not re.match(r'1[3456789]\d{9}$', mobile):
         return jsonify(errno=RET.PARAMERR, errmsg='手机号格式错误')
-
-
     try:
         user = User.query.filter_by(mobile=mobile).first()
     except Exception as e:

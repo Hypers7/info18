@@ -115,12 +115,12 @@ $(function(){
         }
         // 发起ajax请求
         $.ajax({
-            url:'/login',
+            url:'login',
             type:'post',
-            dataType:JSON.stringify(params),
+            data:JSON.stringify(params),
             contentType:'application/json',
             success:function(resp){
-                if (resp.errno == '0') {
+                if(resp.errno == '0'){
                     location.reload();
                 }else{
                     alert(resp.errmsg);
