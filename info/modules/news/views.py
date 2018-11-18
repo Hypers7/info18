@@ -62,7 +62,7 @@ def index():
     # 定义字典 用来返回数据
     data = {
         'user_info': user.to_dict() if user else None,
-        'news_click_list': news_click_list
+        'news_click_list': news_click_list,
         'category_list': category_list
     }
     style = {
