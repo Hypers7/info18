@@ -1,9 +1,11 @@
 # 导入模板对象, 导入上下文对象current_app
-from flask import render_template, current_app
+from flask import render_template, current_app, jsonify
 # 导入蓝图对象 使用蓝图创建路由映射
 from . import news_blue
 from flask import session
-from info.models import User
+from info.models import User, News, Category
+from info import constants
+from info.utils.response_code import RET
 
 
 @news_blue.route('/')
@@ -16,6 +18,11 @@ def index():
     2 根据user id查询mysql获取用户信息
     3 把用户信息 传给模板
 
+    新闻点击排行展示
+    根据新闻的点击次数查询数据库 使用模板渲染数据
+
+    新闻分类展示
+    查询所有新闻分类 使用模板渲染数据
     :return:
     """
     user_id = session.get('user_id')
@@ -25,10 +32,38 @@ def index():
     except Exception as e:
         current_app.logger.error(e)
     #     return 后不登录无法访问首页
+    # 新闻点击排行
+    try:
+        news_list = News.query.order_by(News.clicks.desc()).limit(constants.CLICK_RANK_MAX_NEWS)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询新闻排行数据失败')
+    if not news_list:
+        return jsonify(errno=RET.NODATA, errmsg='无新闻排行数据')
+    news_click_list = []
+    for news in news_list:
+        news_click_list.append(news.to_dict())
+
+    # 新闻分类展示
+    try:
+        categories = Category.query().all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询新闻分类数据失败')
+
+    if not categories:
+        return jsonify(errno=RET.NODATA, errmsg='无新闻分类数据')
+    # 定义容器 存储新闻分类数据
+    category_list = []
+    # 遍历查询结果
+    for category in categories:
+        category_list.append(category.to_dict())
 
     # 定义字典 用来返回数据
     data = {
-        'user_info': user.to_dict() if user else None
+        'user_info': user.to_dict() if user else None,
+        'news_click_list': news_click_list
+        'category_list': category_list
     }
     style = {
         'style': "display: block"
