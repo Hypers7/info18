@@ -27,11 +27,12 @@ def index():
     """
     user_id = session.get('user_id')
     user = None
-    try:
-        user = User.query.get(user_id)
-    except Exception as e:
-        current_app.logger.error(e)
-    #     return 后不登录无法访问首页
+    if user_id:
+        try:
+            user = User.query.get(user_id)
+        except Exception as e:
+            current_app.logger.error(e)
+        #     return 后不登录无法访问首页
     # 新闻点击排行
     try:
         news_list = News.query.order_by(News.clicks.desc()).limit(constants.CLICK_RANK_MAX_NEWS)
@@ -46,7 +47,7 @@ def index():
 
     # 新闻分类展示
     try:
-        categories = Category.query().all()
+        categories = Category.query.all()
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg='查询新闻分类数据失败')
