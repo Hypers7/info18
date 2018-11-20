@@ -98,12 +98,11 @@ def news_list():
     返回结果
     :return:
     """
-
     cid = request.args.get('cid', '1')
     page = request.args.get('page', '1')
     per_page = request.args.get('per_page', '10')
     try:
-        cid,page,per_page = int(cid), int(page), int(per_page)
+        cid, page, per_page = int(cid), int(page), int(per_page)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.PARAMERR, errmsg='参数格式错误')
@@ -111,7 +110,7 @@ def news_list():
     if cid > 1:
         filters.append(News.category_id == cid)
     try:
-        paginate = News.query.filter(*filters).order_by(News.create_time.desc().paginate(page, per_page, False)
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, per_page, False)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg='查询新闻列表失败')
